@@ -1,0 +1,6 @@
+{
+  "name": "PR Bot — AI Review + Auto-Merge",
+  "description": "Adds AI code review (via OpenRouter) on every PR + enables auto-merge when checks + AI review pass.",
+  "iconName": "octicon merge",
+  "categories": ["Automation", "Code Review"]
+}

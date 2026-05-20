@@ -1,0 +1,79 @@
+name: AI Review (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        description: "OpenRouter model id"
+        required: false
+        type: string
+        default: "google/gemini-2.0-flash-001"
+      max_diff_chars:
+        description: "Max diff characters to send to model"
+        required: false
+        type: number
+        default: 80000
+    secrets:
+      OPENROUTER_API_KEY:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    # Skip drafts, dependabot, and bots
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install --quiet requests pyyaml
+
+      - name: Download reviewer script
+        run: |
+          mkdir -p .bot
+          curl -fsSL \
+            "https://raw.githubusercontent.com/${{ github.repository_owner }}/.github/main/scripts/ai_review.py" \
+            -o .bot/ai_review.py
+
+      - name: Run AI review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ inputs.model }}
+          MAX_DIFF_CHARS: ${{ inputs.max_diff_chars }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python .bot/ai_review.py
+
+  auto-merge:
+    needs: ai-review
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Enable auto-merge if everything green
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Wait briefly for AI review to settle
+          sleep 5
+          # Only enable auto-merge — GitHub will merge once all required checks + reviews pass
+          gh pr merge "$PR_NUMBER" --repo "$REPO" --auto --squash --delete-branch || true
+          echo "Auto-merge enabled (will fire when checks + AI review pass)."

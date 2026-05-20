@@ -1,0 +1,43 @@
+name: Auto-Install PR Bot
+
+# Triggers:
+#  - Weekly (Monday 06:00 UTC): scan org/user for new repos missing the bot
+#  - Manual dispatch with optional dry-run flag
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Every Monday at 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no writes)"
+        type: boolean
+        default: false
+      force_overwrite:
+        description: "Overwrite existing pr-bot.yml in repos"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  administration: write   # for branch protection
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout .github repo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install --quiet requests
+
+      - name: Run installer
+        env:
+          GITHUB_TOKEN: ${{ secrets.PR_BOT_INSTALL_PAT }}   # PAT with admin:repo + workflow scopes
+          OWNER: ${{ github.repository_owner }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FORCE_OVERWRITE: ${{ inputs.force_overwrite }}
+        run: python scripts/installer.py

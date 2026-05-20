@@ -1,0 +1,17 @@
+name: PR Bot (AI Review + Auto-Merge)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Skip if repo has 'no-pr-bot' topic — see auto-installer for opt-out logic
+jobs:
+  call-reusable:
+    uses: $owner/.github/.github/workflows/ai-review.yml@main
+    secrets:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      checks: write
