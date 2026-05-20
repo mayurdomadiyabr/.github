@@ -1,0 +1,17 @@
+name: PR Bot (AI Review + Auto-Merge)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  call-reusable:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-pr-bot') }}
+    uses: mayurdomadiyabr/.github/.github/workflows/ai-review.yml@main
+    secrets:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      checks: write
