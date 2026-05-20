@@ -137,6 +137,8 @@ def install_into_repo(repo: dict) -> str:
 
 
 def main() -> int:
+    # Debug: confirm token arrived intact (length + prefix don't leak the secret)
+    print(f"DEBUG: token length = {len(TOKEN)} chars, prefix = {TOKEN[:4]!r}, suffix = {TOKEN[-4:]!r}")
     repos = list_repos(OWNER)
     print(f"Found {len(repos)} repos under {OWNER}")
     print(f"DRY_RUN={DRY_RUN}  FORCE_OVERWRITE={FORCE_OVERWRITE}\n")
