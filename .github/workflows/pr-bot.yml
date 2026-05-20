@@ -8,8 +8,7 @@ jobs:
   call-reusable:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-pr-bot') }}
     uses: mayurdomadiyabr/.github/.github/workflows/ai-review.yml@main
-    secrets:
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    secrets: inherit
     permissions:
       contents: read
       pull-requests: write
