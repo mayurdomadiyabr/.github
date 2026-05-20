@@ -21,7 +21,9 @@ from typing import Any
 import requests
 
 GITHUB_API = "https://api.github.com"
-TOKEN = os.environ["GITHUB_TOKEN"]
+# Use INSTALL_TOKEN, not GITHUB_TOKEN — GitHub Actions reserves GITHUB_TOKEN and
+# overrides it with its automatic per-repo token (which can't access other repos).
+TOKEN = os.environ["INSTALL_TOKEN"]
 OWNER = os.environ["OWNER"]
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 FORCE_OVERWRITE = os.environ.get("FORCE_OVERWRITE", "false").lower() == "true"

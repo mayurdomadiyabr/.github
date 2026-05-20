@@ -35,7 +35,8 @@ jobs:
 
       - name: Run installer
         env:
-          GITHUB_TOKEN: ${{ secrets.PR_BOT_INSTALL_PAT }}   # PAT with admin:repo + workflow scopes
+          # IMPORTANT: do NOT name this GITHUB_TOKEN — Actions overrides it.
+          INSTALL_TOKEN: ${{ secrets.PR_BOT_INSTALL_PAT }}
           OWNER: ${{ github.repository_owner }}
           DRY_RUN: ${{ inputs.dry_run }}
           FORCE_OVERWRITE: ${{ inputs.force_overwrite }}
